@@ -33,11 +33,12 @@
 
         <div class="row" ng-show="blocks.length > 0">
             <div class="col-md-4" ng-repeat="block in blocks">
-                <div class="card" ng-class="{bad_block: block.mine_complete && !block.good_block, 
-                                            good_block: block.mine_complete && block.good_block}">
+                <div class="card">
                     <h4 class="card-header">Blockchain Block {{$index + 1}}</h4>
                     <p class="card-header">Status: {{block.mine_time}}</p>
-                    <div class="card-body">
+                    <div class="card-body" ng-class="{bad_block: block.mine_complete && !block.good_block, 
+                                                      good_block: block.mine_complete && block.good_block}" >
+                        <div class="loading-spiner-holder" data-loading><div class="loading-spiner"><img src="img/loading.gif" /></div></div>
                         <form>
                             <div class="form-group row">
                                 <label for="block_label_{{$index}}" class="col-sm-4 col-form-label">Block</label>
@@ -71,7 +72,9 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <button type="button" class="btn btn-outline-primary" ng-click="mineBtnClickHandler($event, $index)"><i class="fa fa-search"></i>  Mine</button>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-primary" ng-click="mineBtnClickHandler($event, $index)"><i class="fa fa-search"></i>  Mine</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -79,6 +82,7 @@
                 <br />
             </div>
         </div>
+
         <div class="modal fade" id="pref_modal">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
