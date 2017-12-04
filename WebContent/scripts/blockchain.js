@@ -65,7 +65,7 @@ app.controller("blockchain_controller", ["$scope", '$http', function ($scope, $h
     $scope.config = global_config;
 
     angular.element(document).ready(function () {
-        $scope.blocks = [];  
+        $scope.blocks = [];
         $scope.saveBtnClickHandler = function (e) {
             var diff = parseInt(document.getElementById("txt_difficulty").value),
                 timeout = parseInt(document.getElementById("txt_timeout").value),
@@ -106,14 +106,18 @@ app.controller("blockchain_controller", ["$scope", '$http', function ($scope, $h
         }
 
         $scope.mineBtnClickHandler = function (e, index) {
+            debugger;
+            var form = e.target.parentElement.parentElement.parentElement;
+            form.classList.add("ng-hide");
+
             if (global_config.langugage == 1) {
                 $scope.blocks[index].mine(global_config.difficulty);
                 if (index < $scope.blocks.length - 1) {
                     $scope.blocks[index + 1].parentID = $scope.blocks[index].hash;
                 }
+                form.classList.remove("ng-hide");
             }
             else if (global_config.langugage == 2) {
-                
                 var data_json = {
                     block: $scope.blocks[index].id,
                     parent: $scope.blocks[index].parentID,
@@ -123,11 +127,9 @@ app.controller("blockchain_controller", ["$scope", '$http', function ($scope, $h
                     difficulty: global_config.difficulty,
                     timeout: global_config.timeout
                 };
-                
-              
 
                 var successCallback = function (response) {
-                		$scope.blocks[index].mine_complete = true;
+                    $scope.blocks[index].mine_complete = true;
                     if (response.data["status"]) {
                         $scope.blocks[index].good_block = true;
                         $scope.blocks[index].mine_time = response.data["time"] + " ms";
@@ -142,20 +144,23 @@ app.controller("blockchain_controller", ["$scope", '$http', function ($scope, $h
                     if (index < $scope.blocks.length - 1) {
                         $scope.blocks[index + 1].parentID = $scope.blocks[index].hash;
                     }
+                    form.classList.remove("ng-hide");
                 }
                 var errorCallback = function (response) {
-                		alert("Error"+response);
+                    $scope.blocks[index].good_block = false;
+                    $scope.blocks[index].mine_complete = true;
+                    $scope.blocks[index].mine_time = "error";
+                    $
+                    form.classList.remove("ng-hide");
                 }
 
                 $http({
-                		method: 'POST',
-                		url: 'http://localhost:18080/Blockchain/MineBlockServlet',
-                		contentType: 'application/json',
-                		data : JSON.stringify(data_json)
-            		}).then(successCallback, errorCallback);
+                    method: 'POST',
+                    url: 'http://localhost:8080/Blockchain/MineBlockServlet',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data_json)
+                }).then(successCallback, errorCallback);
             }
-
-            
         }
 
         $scope.onKeyUp = function (e, index) {
@@ -170,7 +175,7 @@ app.controller("blockchain_controller", ["$scope", '$http', function ($scope, $h
                 $scope.blocks[i + 1].parentID = $scope.blocks[i].hash;
                 $scope.blocks[i].good_block = false;
             }
-            
+
             $scope.blocks[$scope.blocks.length - 1].hash = $scope.blocks[$scope.blocks.length - 1].generateHash();
             $scope.blocks[$scope.blocks.length - 1].good_block = false;
         }
@@ -193,4 +198,27 @@ app.controller("blockchain_controller", ["$scope", '$http', function ($scope, $h
             return true;
         }
     });
+}]);
+
+app.directive('loading',  ['$http' ,function ($http)
+{
+    return {
+        restrict: 'A',
+        link: function (scope, elm, attrs)
+        {
+            scope.isLoading = function () {
+                return $http.pendingRequests.length > 0;
+            };
+
+            scope.$watch(scope.isLoading, function (v)
+            {
+                if(v){
+                    elm.show();
+                }else{
+                    elm.hide();
+                }
+            });
+        }
+    };
+
 }]);
