@@ -1,30 +1,36 @@
-﻿global_config = {
-    difficulty: 3,
-    timeout: 1000,
-    langugage: 1,
-    url: "http://localhost:8080/Blockchain/MineBlockServlet"
+﻿//global variable
+global_config = {
+    difficulty: 3,      //hashing difficulty
+    timeout: 10000,     //in milliseconds
+    langugage: 1,       //1 -> Javascript; 2-> Java
+    url: "http://localhost:8080/Blockchain/MineBlockServlet"    //url for Java servlet
 }
 
 var app = angular.module('BlockChain', []);
 
+//service for block chain
 app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', function ($http, $timeout, UIHelperService) {
-    var blocks = [],
-        options = [{ value: 1, name: "Javascript Implementation" }, { value: 2, name: "Java Implementation" }];
+    var blocks = [],    //stores all the Blocks in the blockchain
+        options = [{ value: 1, name: "Javascript Implementation" }, { value: 2, name: "Java Implementation" }];     //popup language select options
 
+    //getters for blocks and options
     this.getOptions = function () { return options; }
     this.getBlocks = function () { return blocks; }
 
+    //structure for individual block
     var Block = function () {
-        this.id = "";
-        this.nonce = 0;
-        this.data = "";
-        this.mine_time = null;
-        this.mine_action_perf = false;
-        this.good_block = false;
-        this.parentID = 0;
-        this.parentMined = false;
-        this.hash = null;
+        this.id = "";       //stores UUID
+        this.nonce = 0;     //stores the nonce (for calculating hash)
+        this.data = "";     //stores block data
+        this.mine_time = null;          //stores time taken to mine || updates status in the block view
+        this.mine_action_perf = false;  //signifies that mining action has been performed, successfully or unsuccessfully
+        this.good_block = false;        //signifies that mining action was complete or not
+        this.parentID = 0;              //stores hash of parent
+        this.parentMined = false;       //signifies that parent has been mined or not
+        this.hash = null;               //stores hash 
     }
+
+    //methods for each block
     Block.prototype = {
         createBlock: function () {
             this.id = this.generateUUID();
@@ -69,9 +75,12 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         }
     }
 
+    //handler for create block button
     this.createBtnClickHandler = function (e) {
         var new_block = new Block();
         new_block.createBlock();
+
+        //genesis block condition
         if (blocks.length == 0) {
             blocks.push(new_block);
             return;
@@ -82,22 +91,26 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         blocks.push(new_block);
     }
 
+    //handler for settings button
     this.saveBtnClickHandler = function (elements) {
-        var diff = elements[0],
-            curr_diff = global_config.difficulty,
-            timeout = elements[1],
-            lang_val = elements[2],
+        var diff = elements[0], //entered difficulty
+            curr_diff = global_config.difficulty,   //current difficulty
+            timeout = elements[1],  
+            lang_val = elements[2], 
             url = elements[3];
 
+        //updating global variable 
         global_config.difficulty = !isNaN(diff) ? diff : global_config.difficulty;
         global_config.timeout = !isNaN(timeout) ? timeout : global_config.timeout;
         global_config.langugage = !isNaN(lang_val) ? lang_val : global_config.langugage;
         global_config.url = url;
 
+        //blocks are reset only if difficulty is changed
         if (curr_diff != global_config.difficulty)
             this.resetAllBlocks();
     }
 
+    //resets all the blocks to initial state
     this.resetAllBlocks = function () {
         for (var i = 0; i < blocks.length; i++) {
             blocks[i].nonce = 0;
@@ -112,6 +125,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         }
     }
     
+    //constructs json with data for sending to any server
     this.constructJsonData = function (index) {
         return {
             block: blocks[index].id,
@@ -124,7 +138,9 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         }
     }
 
+    //using javascript to find solution for set difficulty
     this.findHashUsingJS = function (index, elements, enableActions, callback) {
+        //setting timeout to try making it async on the javascript end. doesn't help much though. thus, display freezes when difficulty is higher
         $timeout(function () {
             blocks[index].mine(global_config.difficulty);
             if (index < blocks.length - 1) {
@@ -139,6 +155,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         }, 0);
     }
 
+    //using external service to find the solution
     this.findHashUsingExternalService = function (index, elements, enableActions, callback) {
         var data_json = this.constructJsonData(index);
 
@@ -148,6 +165,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
             contentType: 'application/json',
             data: JSON.stringify(data_json)
         }).then(
+        //callback if async call is successfull
         function (response) {
             blocks[index].mine_action_perf = true;
             if (response.data["status"]) {
@@ -160,6 +178,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
                     blocks[index + 1].parentMined = true;
             }
             else {
+                //timed out
                 blocks[index].nonce = response.data["nonce"];
                 blocks[index].good_block = false;
                 blocks[index].mine_time = "Timeout. Mine for more time";
@@ -173,6 +192,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
             enableActions(elements);
             callback();
         },
+         //callback if async call had errors
         function (response) {
             blocks[index].good_block = false;
             blocks[index].mine_action_perf = true;
@@ -186,7 +206,9 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         });
     }
 
+    //mine button handler 
     this.mineBtnClickHandler = function (e, index, callback) {
+        //does not mine if parent is not mined, unless if block is genesis block
         if (index > 0 && !blocks[index].parentMined) return;
 
         var elements = UIHelperService.getElements(e);
@@ -200,13 +222,15 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         }
     }
 
+    //handler for key up event
     this.onKeyUpHandler = function (e, index) {
         blocks[index].data = e.target.value;
-        this.propogateChange(index);
+        this.propagateChange(index);
         blocks[index].good_block = false;
     }
 
-    this.propogateChange = function (index) {
+    //invalidates rest of the chain from given index of the blockchain
+    this.propagateChange = function (index) {
         for (var i = index; i < blocks.length - 1; i++) {
             blocks[i].hash = blocks[i].generateHash();
             blocks[i + 1].parentID = blocks[i].hash;
@@ -221,6 +245,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         blocks[blocks.length - 1].mine_time = "bad";
     }
 
+    //checks if blockchain is valid | unused
     this.isChainValid = function (index) {
         if (index == 0) index++;
         for (var i = index; i < blocks.length; i++) {
@@ -240,7 +265,9 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
     }
 }]);
 
+//service for UI related actions
 app.service("UIHelperService", [function () {
+    //disables certain elements of the block
     this.disableActions = function (elements) {
         var icon = elements[0],
             btn = elements[1],
@@ -252,6 +279,7 @@ app.service("UIHelperService", [function () {
         icon.classList.add("fa-spinner");
     }
 
+    //enables certain elements of the block
     this.enableActions = function (elements) {
         var icon = elements[0],
             btn = elements[1],
@@ -263,6 +291,7 @@ app.service("UIHelperService", [function () {
         icon.classList.add("fa-search");
     }
 
+    //gets elements from the block
     this.getElements = function (e) {
         var element = e.target;
         while (element && !element.classList.contains("fa")) {
@@ -283,15 +312,16 @@ app.service("UIHelperService", [function () {
     }
 }]);
 
+//controller for block chain. Acts as view updater
 app.controller("BlockChainController", ["$scope", 'BlockChainService', function ($scope, BlockChainService) {
     $scope.config = global_config;
-    $scope.blocks = [];
-    $scope.options = BlockChainService.getOptions();
-    $scope.select_index = $scope.options[0];
+    $scope.blocks = [];         //view makes use of this to update all the blocks
+    $scope.options = BlockChainService.getOptions();        //options for language in modal popup
+    $scope.select_index = $scope.options[0];        
 
     angular.element(document).ready(function () {
-        $scope.blocks = [];
-
+        
+        //settings button handler
         $scope.saveBtnClickHandler = function (e) {
             var elements = [parseInt(document.getElementById("txt_difficulty").value),
                             parseInt(document.getElementById("txt_timeout").value),
@@ -303,11 +333,13 @@ app.controller("BlockChainController", ["$scope", 'BlockChainService', function 
             $scope.config = global_config;
         }
 
+        //create block button handler
         $scope.createBtnClickHandler = function (e) {
             BlockChainService.createBtnClickHandler();
             $scope.blocks = BlockChainService.getBlocks();
         }
 
+        //mine button handler
         $scope.mineBtnClickHandler = function (e, index) {
             var updateBlocks = function () {
                 $scope.blocks = BlockChainService.getBlocks();
@@ -315,6 +347,7 @@ app.controller("BlockChainController", ["$scope", 'BlockChainService', function 
             BlockChainService.mineBtnClickHandler(e, index, updateBlocks);
         }
 
+        //keyup event handler
         $scope.onKeyUpHandler = function (e, index) {
             BlockChainService.onKeyUpHandler(e, index);
             $scope.blocks = BlockChainService.getBlocks();
