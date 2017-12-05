@@ -13,8 +13,9 @@ Tomcat/apache server
 4. Switch on the apache server
 5. Open browser and enter the url: http://localhost:{port_no}/blockchain/WebContent/BlockChain.html
 
-### If you want to compute the hash at the Java end, hit the "change pref" button, and change the language to "Java Implementation".
-### Make sure you enter the correct URL in text field below language
+### Notes
+If you want to compute the hash at the Java end, hit the "change pref" button, and change the language to "Java Implementation".
+Make sure you enter the correct URL in text field below language
 
 
 
