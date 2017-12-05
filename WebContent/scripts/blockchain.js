@@ -1,7 +1,8 @@
 ﻿global_config = {
     difficulty: 3,
     timeout: 100000,
-    langugage: 1
+    langugage: 1,
+    url: "http://localhost:8080/Blockchain/MineBlockServlet"
 }
 
 
@@ -68,19 +69,25 @@ var app = angular.module('BlockChain', []);
 
 app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function ($scope, $http, $timeout) {
     $scope.config = global_config;
+    
+    $scope.options = [{ value: 1, name: "Javascript Implementation" }, { value: 2, name: "Java Implementation" }];
+    $scope.select_index = $scope.options[0];
 
     angular.element(document).ready(function () {
         $scope.blocks = [];
+
         $scope.saveBtnClickHandler = function (e) {
+            debugger;
             var diff = parseInt(document.getElementById("txt_difficulty").value),
             	curr_diff = global_config.difficulty,
                 timeout = parseInt(document.getElementById("txt_timeout").value),
-                lang = document.getElementById("select_language"),
-                lang_val = parseInt(lang.options[lang.selectedIndex].value);
-
+                lang_val = $scope.select_index.value,
+                url = document.getElementById("txt_url").value;
+                        
             global_config.difficulty = !isNaN(diff) ? diff : global_config.difficulty;
             global_config.timeout = !isNaN(timeout) ? timeout : global_config.timeout;
             global_config.langugage = !isNaN(lang_val) ? lang_val : global_config.langugage;
+            global_config.url = url;
 
             $scope.config = global_config;
             if (curr_diff != global_config.difficulty)
@@ -115,7 +122,6 @@ app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function
         }
 
         $scope.mineBtnClickHandler = function (e, index) {
-            debugger;
             if (index > 0 && !$scope.blocks[index].parentMined) return;
 
             var disableActions = function (btn, card, icon) {
@@ -157,8 +163,10 @@ app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function
                     debugger;
                     $scope.blocks[index].mine(global_config.difficulty);
                     if (index < $scope.blocks.length - 1) {
-                        $scope.blocks[index + 1].parentID = $scope.blocks[index].hash;
-                        if ($scope.blocks[index].good_block)
+                        if ($scope.blocks[index + 1])
+                            $scope.blocks[index + 1].parentID = $scope.blocks[index].hash;
+
+                        if ($scope.blocks[index].good_block && $scope.blocks[index + 1])
                             $scope.blocks[index + 1].parentMined = true;
                     }
                     enableActions(btn, card, icon);
@@ -182,15 +190,18 @@ app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function
                         $scope.blocks[index].mine_time = response.data["time"] + " ms";
                         $scope.blocks[index].hash = response.data["hash"];
                         $scope.blocks[index].nonce = response.data["nonce"];
-                        $scope.blocks[index + 1].parentMined = true;
+
+                        if ($scope.blocks[index + 1])
+                            $scope.blocks[index + 1].parentMined = true;
                     }
                     else {
                         $scope.blocks[index].good_block = false;
                         $scope.blocks[index].mine_time = "Timeout. Mine for more time";
-                        $scope.blocks[index + 1].parentMined = false;
+                        if ($scope.blocks[index + 1])
+                            $scope.blocks[index + 1].parentMined = false;
                     }
 
-                    if (index < $scope.blocks.length - 1) {
+                    if (index < $scope.blocks.length - 1 && $scope.blocks[index + 1]) {
                         $scope.blocks[index + 1].parentID = $scope.blocks[index].hash;
                     }
                     enableActions(btn, card, icon);
@@ -199,20 +210,23 @@ app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function
                     $scope.blocks[index].good_block = false;
                     $scope.blocks[index].mine_action_perf = true;
                     $scope.blocks[index].mine_time = "Error connecting to server";
-                    $scope.blocks[index + 1].parentMined = false;
+
+                    if ($scope.blocks[index + 1])
+                        $scope.blocks[index + 1].parentMined = false;
+
                     enableActions(btn, card, icon);
                 }
 
                 $http({
                     method: 'POST',
-                    url: 'http://localhost:8080/Blockchain/MineBlockServlet',
+                    url: global_config.url,
                     contentType: 'application/json',
                     data: JSON.stringify(data_json)
                 }).then(successCallback, errorCallback);
             }
         }
 
-        $scope.onKeyUp = function (e, index) {
+        $scope.onKeyUpHandler = function (e, index) {
             $scope.blocks[index].data = e.target.value;
             $scope.propogateChange(index);
             $scope.blocks[index].good_block = false;
