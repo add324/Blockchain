@@ -1,6 +1,6 @@
 ﻿global_config = {
-    difficulty: 3,
-    timeout: 100000,
+    difficulty: 5,
+    timeout: 1000,
     langugage: 1,
     url: "http://localhost:8080/Blockchain/MineBlockServlet"
 }
@@ -160,7 +160,6 @@ app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function
 
             if (global_config.langugage == 1) {
                 $timeout(function () {
-                    debugger;
                     $scope.blocks[index].mine(global_config.difficulty);
                     if (index < $scope.blocks.length - 1) {
                         if ($scope.blocks[index + 1])
@@ -195,6 +194,7 @@ app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function
                             $scope.blocks[index + 1].parentMined = true;
                     }
                     else {
+                    	$scope.blocks[index].nonce = response.data["nonce"];
                         $scope.blocks[index].good_block = false;
                         $scope.blocks[index].mine_time = "Timeout. Mine for more time";
                         if ($scope.blocks[index + 1])
@@ -233,7 +233,6 @@ app.controller("blockchain_controller", ["$scope", '$http', '$timeout', function
         }
 
         $scope.propogateChange = function (index) {
-            debugger;
             for (var i = index; i < $scope.blocks.length - 1; i++) {
                 $scope.blocks[i].hash = $scope.blocks[i].generateHash();
                 $scope.blocks[i + 1].parentID = $scope.blocks[i].hash;
