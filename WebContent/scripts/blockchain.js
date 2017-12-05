@@ -252,8 +252,9 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
     //handler for key up event
     this.onKeyUpHandler = function (e, index) {
         blocks[index].data = e.target.value;
-        this.propagateChange(index);
         blocks[index].good_block = false;
+        if (index != blocks.length - 1)
+            this.propagateChange(index);
     }
 
     //invalidates rest of the chain from given index of the blockchain
