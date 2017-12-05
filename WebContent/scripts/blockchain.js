@@ -101,7 +101,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
             lang_val = elements[2], 
             url = elements[3],
             port = elements[4];
-        debugger;
+        
         //updating global variable 
         this.config.difficulty = !isNaN(diff) ? diff : this.config.difficulty;
         this.config.timeout = !isNaN(timeout) ? timeout : this.config.timeout;
@@ -240,7 +240,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
 
         var elements = UIHelperService.getElements(e);
         UIHelperService.disableActions(elements);
-        debugger;
+        
         if (this.config.langugage == 1) {
             this.findHashUsingJS(index, elements, UIHelperService.enableActions, callback);
         }
@@ -357,7 +357,7 @@ app.controller("BlockChainController", ["$scope", 'BlockChainService', function 
                             $scope.select_index.value,
                             document.getElementById("txt_url").value.trim(),
                             document.getElementById("txt_port").value.trim()];
-            debugger;
+            
             BlockChainService.saveBtnClickHandler(elements);
             $scope.blocks = BlockChainService.getBlocks();
             $scope.config = JSON.parse(JSON.stringify(BlockChainService.getConfig()));
