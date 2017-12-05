@@ -97,11 +97,11 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
     this.saveBtnClickHandler = function (elements) {
         var diff = elements[0], //entered difficulty
             curr_diff = this.config.difficulty,   //current difficulty
-            timeout = elements[1],  
-            lang_val = elements[2], 
+            timeout = elements[1],
+            lang_val = elements[2],
             url = elements[3],
             port = elements[4];
-        
+
         //updating global variable 
         this.config.difficulty = !isNaN(diff) ? diff : this.config.difficulty;
         this.config.timeout = !isNaN(timeout) ? timeout : this.config.timeout;
@@ -128,7 +128,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
                 blocks[i + 1].parentID = blocks[i].hash;
         }
     }
-    
+
     //constructs json with data for sending to any server
     this.constructJsonData = function (index) {
         return {
@@ -162,7 +162,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
 
     //using external service to find the solution
     this.findHashUsingExternalService = function (index, elements, enableActions, callback) {
-        
+
         var data_json = this.constructJsonData(index),
             full_url = "http://localhost:" + (this.config.port !== "" ? this.config.port : 80) + this.config.url;
 
@@ -218,7 +218,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
         //does not mine if parent is not mined, unless if block is genesis block
         if (index > 0 && !blocks[index].parentMined) {
             var traverse = 0;
-            while (blocks[traverse].good_block) { traverse++;  }
+            while (blocks[traverse].good_block) { traverse++; }
             var element;
             if (traverse > 0) {
                 element = document.getElementById("card" + (traverse));
@@ -240,7 +240,7 @@ app.service("BlockChainService", ['$http', '$timeout', 'UIHelperService', functi
 
         var elements = UIHelperService.getElements(e);
         UIHelperService.disableActions(elements);
-        
+
         if (this.config.langugage == 1) {
             this.findHashUsingJS(index, elements, UIHelperService.enableActions, callback);
         }
@@ -347,7 +347,7 @@ app.controller("BlockChainController", ["$scope", 'BlockChainService', function 
     $scope.config = JSON.parse(JSON.stringify(BlockChainService.getConfig()));
     $scope.blocks = BlockChainService.getBlocks();         //view makes use of this to update all the blocks
     $scope.options = BlockChainService.getOptions();        //options for language in modal popup
-    $scope.select_index = $scope.options[0];        
+    $scope.select_index = $scope.options[0];
 
     angular.element(document).ready(function () {
         //settings button handler
@@ -357,7 +357,7 @@ app.controller("BlockChainController", ["$scope", 'BlockChainService', function 
                             $scope.select_index.value,
                             document.getElementById("txt_url").value.trim(),
                             document.getElementById("txt_port").value.trim()];
-            
+
             BlockChainService.saveBtnClickHandler(elements);
             $scope.blocks = BlockChainService.getBlocks();
             $scope.config = JSON.parse(JSON.stringify(BlockChainService.getConfig()));
@@ -387,10 +387,8 @@ app.controller("BlockChainController", ["$scope", 'BlockChainService', function 
 
         //keyup event handler
         $scope.onKeyUpHandler = function (e, index) {
-            if (index) {
-                BlockChainService.onKeyUpHandler(e, index);
-                $scope.blocks = BlockChainService.getBlocks();
-            }
+            BlockChainService.onKeyUpHandler(e, index);
+            $scope.blocks = BlockChainService.getBlocks();
         }
     });
 }]);
