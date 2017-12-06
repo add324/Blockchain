@@ -8,7 +8,7 @@
 
 ### Steps to install:
 1. Download the BlockchainRepo package
-2. Make sure your tomcat-users.xml is configured
+2. Make sure your tomcat-users.xml is configured (check 'sample_tomcat-users.xml' file for a working example)
 3. Switch on the Tomcat server 
 4. Open browser and enter the url: http://localhost:{port_no}  //where port no is the port tomcat is running on
 5. Click on manager app and enter the valid credentials as documented on tomcat-users.xml
