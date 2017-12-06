@@ -21,11 +21,5 @@
 - If you want to compute the hash at the Java end, hit the "change pref" button, and change the language to "Java Implementation".
 - Java Servlets is configured to listen on http://localhost:{port_no}/Blockchain/MineBlockServlet
 
-##### Sample tomcat-users.xml user 
-<role rolename="manager-gui"/>
-<role rolename="manager-script"/>
-<role rolename="admin"/>
-<user username="admin" password="admin" roles="admin,manager-gui,manager-script"/>
-
 
 
