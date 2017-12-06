@@ -1,9 +1,9 @@
 # Blockchain Installation 
 
 ### Requirements:
-Suggested browser - Chrome
-JavaScript has to be enabled 
-Tomcat server
+- Suggested browser - Chrome
+- JavaScript has to be enabled 
+- Tomcat server
 
 ### Steps to install:
 1. Download the BlockchainRepo package
