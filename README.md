@@ -3,19 +3,22 @@
 ### Requirements:
 Suggested browser - Chrome
 JavaScript has to be enabled 
-Java has to be installed (if Java implementation needs to be executed)
-Tomcat/apache server
+Tomcat server
 
 ### Steps to install:
 1. Download the BlockchainRepo package
-2. Create a directory called "blockchain" inside your "htdocs" or "public_html" folder 
-3. Copy all the contents from "BlockchainRepo-master" directory and paste it into "blockchain" directory
-4. Switch on the apache server
-5. Open browser and enter the url: http://localhost:{port_no}/blockchain/WebContent/BlockChain.html
+2. Make sure your tomcat-users.xml is configured
+3. Switch on the Tomcat server 
+4. Open browser and enter the url: http://localhost:{port_no}  //where port no is the port tomcat is running on
+5. Click on manager app and enter the valid credentials as documented on tomcat-users.xml
+6. Scroll to section Deploy -> WAR file to deploy
+7. Choose file from package i.e. Blockchain/war/blockchain.war
+8. Hit deploy
+9. Enter the url: http://localhost:{port_no}/Blockchain/
 
 ### Notes
-If you want to compute the hash at the Java end, hit the "change pref" button, and change the language to "Java Implementation".
-Make sure you enter the correct URL in text field below language
+- If you want to compute the hash at the Java end, hit the "change pref" button, and change the language to "Java Implementation".
+- Java Servlets is configured to listen on http://localhost:{port_no}/Blockchain/MineBlockServlet
 
 
 
